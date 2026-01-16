@@ -11,7 +11,7 @@ const SignIn = () => {
         }
 
         try {
-            const res = await fetch("https://fantastic-space-orbit-v6q4rg9pj94626gpj-5173.app.github.dev/auth/signin", {
+            const res = await fetch("https://fictional-funicular-q7j97gjg5jp29xxg-5173.app.github.dev/signin", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -31,20 +31,34 @@ const SignIn = () => {
     }
 
     return (
-        <div className="container">
-
-            <h1>🎰Kazik🎰</h1>
-            <p className="subtitle">Демонстрация CSRF + CORS + Sessions</p>
-
-            <div className="forms">
-                <div className="form-card">
-                    <h2>Вход</h2>
-                    <form onSubmit={handleSubmit}>
-                        <input name="email" type="text" placeholder="Имя пользователя" required />
-                        <input name="password" type="password" placeholder="Пароль" required />
-                        <button type="submit">Войти</button>
-                    </form>
+            <div id="auth-screen" className="screen active">
+                <div className="auth-container">
+                <h1 className="casino-title">🎰Kazik🎰</h1>
+                <div className="auth-tabs">
+                    <button className="tab-btn active" onclick="showLogin()">
+                        Вход
+                    </button>
+                    <button className="tab-btn" onclick="showSignup()">
+                        Регистрация
+                    </button>
                 </div>
+                <form id="login-form" className="auth-form active">
+                    <div className="form-group">
+                        <label>Имя лудика</label>
+                        <input type="text" placeholder="Введите имя" required="" />
+                    </div>
+                    <div className="form-group">
+                        <label>Пароль</label>
+                        <input
+                            type="password"
+                            placeholder="Введите пароль"
+                            required=""
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary">
+                        Войти
+                    </button>
+                </form>
             </div>
         </div>
     )

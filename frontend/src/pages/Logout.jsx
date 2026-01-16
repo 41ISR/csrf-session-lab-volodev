@@ -7,7 +7,7 @@ const Logout = () => {
     const navigate = useNavigate()
     useEffect(() => {
         const logUserOut = async () => {
-            await fetch("https://fantastic-space-orbit-v6q4rg9pj94626gpj-5173.app.github.dev/auth/logout", {
+            await fetch("https://effective-tribble-v6q4r975rv6vf6gvv-5173.app.github.dev//auth/logout", {
                 credentials: "include"
             })
             clearUser()

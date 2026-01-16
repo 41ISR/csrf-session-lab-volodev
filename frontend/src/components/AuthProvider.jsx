@@ -2,6 +2,7 @@ import { Outlet, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../store/useAuthStore"
 import { useEffect, useState } from "react"
 
+
 const AuthProvider = () => {
     const {user, checkAuth} = useAuthStore()
     const navigate = useNavigate()

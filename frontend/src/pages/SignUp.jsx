@@ -11,7 +11,7 @@ const SignUp = () => {
         }
 
         try {
-            const res = await fetch("https://fantastic-space-orbit-v6q4rg9pj94626gpj-5173.app.github.dev/auth/signup", {
+            const res = await fetch("https://fictional-funicular-q7j97gjg5jp29xxg-5173.app.github.dev/auth/signup", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -29,22 +29,57 @@ const SignUp = () => {
         }
     }
     return (
-        <div className="container">
-
-            <h1>🎰Kazik🎰</h1>
-            <p className="subtitle">Демонстрация CSRF + CORS + Sessions</p>
-
-            <div className="forms">
-                <div className="form-card">
-                    <h2>Регистрация</h2>
-                    <form onSubmit={handleSubmit}>
-                        <input id="email" name="email" type="email" placeholder="Почта" required />
-                        <input id="password" name="password" type="password" placeholder="Пароль (мин. 6 символов)" required />
-                        <button type="submit">Зарегистрироваться</button>
-                    </form>
-                </div>
+        <div id="auth-screen" className="screen active">
+        <div className="auth-container">
+            <h1 className="casino-title">🎲 [ПРИДУМАЙТЕ НАЗВАНИЕ]</h1>
+            <div className="auth-tabs">
+                <button className="tab-btn active" onclick="showLogin()">
+                    Вход
+                </button>
+                <button className="tab-btn" onclick="showSignup()">
+                    Регистрация
+                </button>
             </div>
+            <form id="signup-form" className="auth-form">
+                <div className="form-group">
+                    <label>Имя пользователя</label>
+                    <input
+                        type="text"
+                        placeholder="Придумайте имя"
+                        required=""
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        placeholder="Введите email"
+                        required=""
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Пароль</label>
+                    <input
+                        type="password"
+                        placeholder="Придумайте пароль"
+                        required=""
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Подтвердите пароль</label>
+                    <input
+                        type="password"
+                        placeholder="Повторите пароль"
+                        required=""
+                    />
+                </div>
+                <button type="submit" className="btn btn-primary">
+                    Создать аккаунт
+                </button>
+            </form>
         </div>
+    </div>
+            
     )
 }
 
