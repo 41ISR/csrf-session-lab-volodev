@@ -1,6 +1,6 @@
 import { create } from "zustand"
 
-const useAppStore = create((set,get) => ({
+const useAppStore = create((set) => ({
     currentBalance: 0,
     leaderboard: [],
     setCurrentBalance: (amount) => set((state) => ({...state, currentBalance: amount})),

@@ -7,8 +7,6 @@ const csrf = require('csurf')
 const bcrypt = require("bcrypt")
 const session = require("express-session")
 
-// ----------
-// CONSTANTS
 
 const ERROR_MESSAGE = {
     notAllData: "Не все данные предоставлены",
@@ -19,21 +17,20 @@ const ERROR_MESSAGE = {
 
 }
 
-// ---------- 
-// SET APP
 
 const app = express()
 
-app.set("trust proxy", 1)                       // CODESPACE ONLY
+app.set("trust proxy", 1)                      
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin: true,                               // CODESPACE ONLY
+    origin: true,                               
     credentials: true,
     methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", 'X-CSRF-TOKEN'],
     exposedHeaders: ["set-cookie"]
 }))
+
 app.use(session({
     secret: "ehfpiQEGeMGojef94fkrOP3kgp515594fkpqkegoug4gwjrgwfw4gow49dqds3wefk4",
     name: "sessionId",
@@ -42,15 +39,11 @@ app.use(session({
     cookie: {
         httpOnly: true,
         maxAge: 24*60*60*1000,
-        // sameSite: "strict",  
-        sameSite: "lax",            // CODESPACE ONLY
-        secure: true,                // FALSE for localhost
-        domain: undefined           // CODESPACE ONLY
+        sameSite: "lax",
+        secure: true,
+        domain: undefined
     }
 }))
-
-// ----------
-// MIDDLEWARE
 
 const csrfMiddleware = csrf({
     cookie: {
@@ -60,14 +53,12 @@ const csrfMiddleware = csrf({
     }
 })
 
-// ----------
-// AUTH
-
 app.get('/csrf-token', csrfMiddleware, (req,res) => {
     res.json({token: req.csrfToken()})
 })
 
 app.post('/auth/signup', (req, res) => {
+    console.log(req.body)
     try {
         const {email, username, password} = req.body
         if(!email || !username || !password) throw new Error('lost')
@@ -136,8 +127,6 @@ app.post("/auth/logout", (req,res) => {
     })
 })
 
-// ----------
-
 app.get('/leaderboard', (_, res) => {
     try {
         const board = db.prepare(`
@@ -150,9 +139,6 @@ app.get('/leaderboard', (_, res) => {
     }
 })
 
-
-
-// ----------
 
 app.listen('3000', () => {
     console.log(`Backend is running on 3000

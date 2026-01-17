@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "react-router-dom"
-import { useAuthStore } from "../store/useAuthStore"
 import { useEffect, useState } from "react"
+import useAuthStore from "../store/useAuthStore"
 
 
 const AuthProvider = () => {

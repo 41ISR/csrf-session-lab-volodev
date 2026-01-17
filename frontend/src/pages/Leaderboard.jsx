@@ -1,5 +1,5 @@
-const Leaderboard = () => {
 
+const Leaderboard = () => {
 
     return (
         <div id="leaderboard-screen" className="screen">
@@ -17,7 +17,7 @@ const Leaderboard = () => {
                 <div className="leaderboard-row rank-1">
                     <span className="rank">🥇 1</span>
                     <span className="player">Юзер</span>
-                    <span className="score">15 750</span>
+                    <span className="score">15 750</span>
                 </div>
                 
             </div>

@@ -1,17 +1,19 @@
 import { useNavigate } from "react-router-dom"
+import SignUp from './SignUp'
 
 const SignIn = () => {
     const navigate = useNavigate()
+
     const handleSubmit = async (e) => {
         e.preventDefault()
 
         const user = {
-            email: e.target.email.value,
+            username: e.target.username.value,
             password: e.target.password.value
         }
 
         try {
-            const res = await fetch("https://fictional-funicular-q7j97gjg5jp29xxg-5173.app.github.dev/signin", {
+            const res = await fetch("https://bug-free-lamp-r4p96rq75w46fpq56-3000.app.github.dev/auth/signin", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -38,21 +40,24 @@ const SignIn = () => {
                     <button className="tab-btn active" onclick="showLogin()">
                         Вход
                     </button>
-                    <button className="tab-btn" onclick="showSignup()">
+                    
+                    <button className="tab-btn" onClick={() => navigate("/SignUp")}>
                         Регистрация
                     </button>
                 </div>
-                <form id="login-form" className="auth-form active">
+                <form id="login-form" className="auth-form active" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Имя лудика</label>
-                        <input type="text" placeholder="Введите имя" required="" />
+                        <input name="username" type="text" placeholder="Введите имя" required="" />
                     </div>
                     <div className="form-group">
                         <label>Пароль</label>
                         <input
+                            name="password"
                             type="password"
                             placeholder="Введите пароль"
                             required=""
+                            minLength="6"
                         />
                     </div>
                     <button type="submit" className="btn btn-primary">

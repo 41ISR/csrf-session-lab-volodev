@@ -1,12 +1,13 @@
 import { create } from "zustand"
 
-export const useAuthStore = create((set, get) => ({
+const useAuthStore = create((set) => ({
     user: undefined,
     checkAuth: async () => {
         try {
-            const res = await fetch("https://effective-tribble-v6q4r975rv6vf6gvv-5173.app.github.dev//auth/me", {
+            const res = await fetch("https://bug-free-lamp-r4p96rq75w46fpq56-3000.app.github.dev/auth/check", {
                 credentials: "include"
             })
+            console.log(res)
 
             if (!res.ok) throw new Error(res.error)
 
@@ -23,3 +24,5 @@ export const useAuthStore = create((set, get) => ({
         set((state) => ({...state, user: undefined}))
     }
 }))
+
+export default useAuthStore
