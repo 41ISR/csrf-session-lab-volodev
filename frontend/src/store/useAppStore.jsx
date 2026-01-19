@@ -1,10 +1,10 @@
-import { create } from "zustand"
+import { create } from "zustand";
 
-const useAppStore = create((set) => ({
-    currentBalance: 0,
+const useAppStore = create((set) =>({
+    currentEscore: 0,
+    setCurrentEscore: (amount) => set((state) => ({...state, currentEscore: amount})),
     leaderboard: [],
-    setCurrentBalance: (amount) => set((state) => ({...state, currentBalance: amount})),
-    setLeaderboard: (board) => set((state) => ({...state, leaderboard: board})),
+    setLeaderBoard: (board) => set((state)=>({...state, leaderboard: board}))
 }))
 
 export default useAppStore

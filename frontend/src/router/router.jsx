@@ -1,39 +1,34 @@
 import { createBrowserRouter } from "react-router-dom"
-import Index from "../pages/Index"
-import Signup from "../pages/SignUp";
-import Signin from "../pages/SignIn"
+import Game from "../pages/Game"
+import Login from "../pages/Login"
+import SignUp from "../pages/SignUp"
 import Logout from "../pages/Logout"
 import AuthProvider from "../components/AuthProvider"
-import Leaderboard from "../pages/Leaderboard";
+import LeaderBoard from "../pages/LeaderBoard"
 
-
-export const router = createBrowserRouter ([
+export const router = createBrowserRouter([
     {
         path: "/",
         element: <AuthProvider />,
         children: [{
             index: true,
-            element: <Index />
-        },
-
-        {
-            path: "/leaderboard",
-            element: <Leaderboard />,
-        }
-    ]
+            element: <Game />
+        }]
     },
-    {
+        {
         path: "/logout",
         element: <Logout />
     }, 
-
     {
-        path: "/Signup",
-        element: <Signup />
+        path: "/login",
+        element: <Login />
+    }, 
+    {
+        path: "/signup",
+        element: <SignUp />
     },
-
     {
-        path: "/signin",
-        element: <Signin />
+        path: "/leaderboard",
+        element: <LeaderBoard />
     },
 ])

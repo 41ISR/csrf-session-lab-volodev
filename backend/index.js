@@ -1,155 +1,205 @@
-
-const cookieParser = require("cookie-parser")
 const db = require("./db")
+const csrf = require("csurf")
 const express = require("express")
 const cors = require("cors")
-const csrf = require('csurf')
 const bcrypt = require("bcrypt")
+const cookieParser = require("cookie-parser")
 const session = require("express-session")
-
-
-const ERROR_MESSAGE = {
-    notAllData: "Не все данные предоставлены",
-    authError: "Неверное имя пользователя или пароль",
-    regEmailExists: "Пользователь с такой почтой уже существует",
-    regUsernameExists: "Пользователь с таким именем уже существует",
-    unexcepted: "Произошла ошибка, попробуйте снова",
-
-}
-
 
 const app = express()
 
-app.set("trust proxy", 1)                      
-app.use(express.json())
+app.set("trust proxy", 1) 
+
 app.use(cookieParser())
+app.use(express.json())
 app.use(cors({
-    origin: true,                               
+    origin: true, 
     credentials: true,
     methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", 'X-CSRF-TOKEN'],
+    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
     exposedHeaders: ["set-cookie"]
 }))
-
 app.use(session({
-    secret: "ehfpiQEGeMGojef94fkrOP3kgp515594fkpqkegoug4gwjrgwfw4gow49dqds3wefk4",
-    name: "sessionId",
-    resavee: false,
+    secret: "asdasdasdasdasdasd",
+    resave: false,
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        maxAge: 24*60*60*1000,
-        sameSite: "lax",
-        secure: true,
-        domain: undefined
+        maxAge: 24 * 60 * 60 * 1000,
+        name: "sessionId",
+        sameSite: "none", 
+        secure: true, 
+        domain: undefined 
     }
 }))
 
 const csrfMiddleware = csrf({
-    cookie: {
+    cookie:{
         httpOnly: false,
-        sameSite: 'none',
+        sameSite: "none",
         secure: true
     }
 })
 
-app.get('/csrf-token', csrfMiddleware, (req,res) => {
-    res.json({token: req.csrfToken()})
+app.get("/auth/check", (req, res) => {
+    console.log(req.session)
+    const escore = db.prepare("SELECT escore FROM users where id = ?").get(req.session.userId)?.escore || 0
+    console.log(escore)
+    if (req.session.userId) {
+        return res.status(200).json({logged: true, user: {
+            userId: req.session.userId,
+            username: req.session.username,
+            escore: escore || 0
+        }})
+    }
+
+    return res.status(401).json({logged: false})
 })
 
-app.post('/auth/signup', (req, res) => {
-    console.log(req.body)
+app.post("/auth/signup", (req, res) => {
     try {
-        const {email, username, password} = req.body
-        if(!email || !username || !password) throw new Error('lost')
-        
-        const emailCh = db.prepare(`
-            SELECT email FROM users WHERE email = ?`).all(email)
-        if(emailCh.length > 0) throw new Error("email")
+        const hashed = bcrypt.hashSync(req.body.password, 10)
+        const newUser = db
+            .prepare(`INSERT INTO users (username, email, password) VALUES (?, ?, ?)`)
+            .run(req.body.username, req.body.email, hashed);
+        const createdUser = db
+            .prepare(`SELECT * FROM users WHERE id = ?`)
+            .get(newUser.lastInsertRowid);
 
-        const unameCh = db.prepare(`
-            SELECT username FROM users WHERE username = ?`).all(username)
-        if(unameCh.length > 0) throw new Error("username")
+            console.log(createdUser)
+        req.session.userId = createdUser.id
+        req.session.email = createdUser.email
+        req.session.username = createdUser.username
+        req.session.escore = createdUser.escore
 
-        const hashed = bcrypt.hashSync(password, 10)
-
-        const info = db.prepare(`
-            INSERT INTO users (email, username, password) VALUES (?,?,?)`).run(email, username, hashed)
-        if(info.changes == 0) throw new Error()
-
-        const newUser = db.prepare(`
-            SELECT * FROM users WHERE id = ?`).get(info.lastInsertRowid)
-
-        req.session.id = newUser.id
-        req.session.username = newUser.username
-        req.session.email = newUser.email
-        req.session.balance = newUser.balance
-        
-        res.status(201).json({message: "Пользователь успешно создан", user: newUser})
+        res.status(201).json(createdUser)
     } catch (error) {
-        console.error(error);
-        if(error.message == "lost") return res.status(400).json({error: ERROR_MESSAGE.notAllData})
-        else if(error.message == "email") return res.status(400).json({error: ERROR_MESSAGE.regEmailExists})
-        else if(error.message == "username") return res.status(400).json({error: ERROR_MESSAGE.regUsernameExists})
-        else return res.status(400).json({error: ERROR_MESSAGE.unexcepted})
+        console.error(error)
+        res.status(400).json(error.code)
     }
 })
 
-app.post('/auth/signin', (req, res) => {
-    try {
-        const {username, password} = req.body
-        if(!username || !password) throw new Error('lost')
+app.post("/auth/signin", (req, res) => {
+    try{
+        const { username, password } = req.body
+        const user = db
+            .prepare(`SELECT * FROM users WHERE username = ?`)
+            .get(username)
+        if (!user) 
+            res
+                .status(401)
+                .json({ error: "Неправильные данные" })
+        const validPassword = bcrypt.compareSync(password, user.password)
+        if (!validPassword) 
+            res
+                .status(401)
+                .json({ error: "Неправильные данные" })
 
-        const user = db.prepare(`
-            SELECT * FROM users WHERE username = ?`).get(username)
-        if(!user) throw new Error('wrong')
-        if(!bcrypt.compareSync(password, user.password)) throw new Error('wrong')
-
-        req.session.id = user.id
         req.session.username = user.username
-        req.session.email = user.email
-        req.session.balance = user.balance
+        req.session.userId = user.id
+        req.session.escore = user.escore
 
-        res.status(200).json({message: 'Успешный вход в систему', user: user})
-    } catch (error) {
-        console.error(error);
-        if(error.message == "lost") return res.status(400).json({error: ERROR_MESSAGE.notAllData})
-        else if(error.message == "wrong") return res.status(400).json({error: ERROR_MESSAGE.authError})
-        else return res.status(400).json({error: ERROR_MESSAGE.unexcepted})
+        res.status(200).json(user)
+    }catch (error){
+        console.error(error)
+        res.status(400).json(error)
     }
 })
 
-app.post("/auth/logout", (req,res) => {
+app.post("/auth/logout", (req, res) => {
     req.session.destroy((err) => {
-        err && res.status(500).json({error: ERROR_MESSAGE.unexcepted})
+        err && res.status(500).json({error: "Не получилось выйти"})
         res.clearCookie("sessionId")
-        res.status(200).json({message: "Успешно вышли из аккаунта"})
+        res.status(200).json({message: "Выход успешен"})
     })
 })
 
-app.get('/leaderboard', (_, res) => {
-    try {
-        const board = db.prepare(`
-            SELECT username, balance FROM users ORDER BY balance DESC LIMIT 10`).all()
+const PAYOUTS = {
+    '💯💯💯': 100,
+    '🍇🍇🍇': 50,
+    '🍌🍌🍌': 25,
+    '🍒🍒🍒': 15,
+    '🍑🍑🍑': 10,
+    '🍏🍏🍏': 8,
+    '❌❌❌': 0,
+}
 
-        res.status(200).json(board)
-    } catch (error) {
-        console.error(error);
-        res.status(400).json({error: ERROR_MESSAGE.unexcepted})
+const SYMBOLS = ['🍑', '🍏', '🍒', '🍇', '🍌', '💯', '❌']
+
+const SYMBOLS_CHANCE = {
+    '🍑':35,
+    '🍏': 25,
+    '🍒': 15,
+    '🍇': 10,
+    '🍌': 8,
+    '💯':5,
+     '❌':2,}
+
+function getCombinationMultiplier(symbols) {
+    return PAYOUTS[symbols.join('')] || 0
+}
+
+function getRandomSymbols() {
+    const entries=Object.entries(SYMBOLS_CHANCE)
+    const total= entries.reduce((s, [, w]) => s+w, 0)
+
+    let r = Math.random()*total
+
+    for (const [sym, weight] of entries){
+        if (r < weight) return sym
+        r -=weight
+    }
+
+}
+
+
+app.post("/api/spin", csrfMiddleware, (req, res) => {
+    const { bet } = req.body
+
+    if (![10, 50, 100].includes(bet)) {
+        return res.status(400).json({ error: "Недопустимая ставка" })
+    }
+
+    try {
+        const user = db.prepare("SELECT escore FROM users WHERE id = ?").get(req.session.userId)
+        if (!user || user.escore < bet) {
+            return res.status(400).json({ error: "Недостаточно баллов" })
+        }
+
+        const resultSymbols = Array.from({length: 3}, () => getRandomSymbols())
+
+
+        const multiplier = getCombinationMultiplier(resultSymbols)
+        const winAmount = multiplier * bet
+        const newBalance = user.escore - bet + winAmount
+
+        db.prepare("UPDATE users SET escore = ? WHERE id = ?").run(newBalance, req.session.userId)
+
+        res.json({
+            symbols: resultSymbols,
+            winAmount,
+            isWin: winAmount > 0,
+            newBalance,
+        })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Ошибка сервера" })
     }
 })
 
+app.get("/api/leaderboard", (req, res) =>{
+    const users = db.prepare("SELECT * FROM users ORDER BY escore DESC LIMIT 10").all()
+    const sanitizedUsers = users.map((el) => {
+        const {createdAt, password, ...newUser} = el
+        return newUser
+    })
+    res.status(200).json(sanitizedUsers)
+})
 
-app.listen('3000', () => {
-    console.log(`Backend is running on 3000
-Endpoints:
-    /auth/signup    - Регистрация
-    /auth/signin    - Авторизация
-    /auth/logout    - Выход
-    /leaderboard    - Топ пользователей (по убыванию баланса)
-    /csrf-token     - Получение токена для запроса
-    /profile        - Получение текущего пользователя
-    /spin           - Крутите барабан
-`);
-    
+app.get("/csrf-token", csrfMiddleware, (req, res) =>{
+    res.json({token: req.csrfToken()})
+})
+
+app.listen("3000", () => {
+    console.log("Порт3000")
 })
